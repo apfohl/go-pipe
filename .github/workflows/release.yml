@@ -16,11 +16,11 @@ jobs:
               with:
                   go-version: '1.20.5'
 
+            - name: Set version
+              run: echo "version=${GITHUB_REF#refs/*/}" >> "$GITHUB_ENV"
+
             - name: Build
-              run: |
-                  arrTag=(${GITHUB_REF//\// })
-                  VERSION="${arrTag[2]}"
-                  go build -ldflags="-X main.version=$VERSION -X main.commit=$GITHUB_SHA -X main.date=$(date +%Y-%m-%dT%T%z)" -o op
+              run: go build -ldflags="-X main.version=${{ env.version }} -X main.commit=$GITHUB_SHA -X main.date=$(date +%Y-%m-%dT%T%z)" -o op
 
             - name: Upload build artifact
               uses: actions/upload-artifact@v2
@@ -32,7 +32,7 @@ jobs:
         needs: [ build ]
         runs-on: ubuntu-latest
         permissions:
-          contents: write
+            contents: write
 
         steps:
             - uses: actions/checkout@v2
@@ -43,16 +43,12 @@ jobs:
                   name: openproject-cli
 
             - name: Set version
-              id: version
-              run: |
-                  arrTag=(${GITHUB_REF//\// })
-                  VERSION="${arrTag[2]}"
-                  echo "version=$VERSION" >> "$GITHUB_ENV"
+              run: echo "version=${GITHUB_REF#refs/*/}" >> "$GITHUB_ENV"
 
-            - name: Zip binary
-              run: zip -r openproject-cli_${{ env.version }}.zip op
+            - name: Zip executable
+              run: zip -r openproject-cli_linux_x64_${{ env.version }}.zip op
 
             - name: Create release
               uses: softprops/action-gh-release@v1
               with:
-                  files: openproject-cli_${{ env.version }}.zip
+                  files: openproject-cli_linux_x64_${{ env.version }}.zip
