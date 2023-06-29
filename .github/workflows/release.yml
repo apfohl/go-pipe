@@ -45,6 +45,9 @@ jobs:
             - name: Set version
               run: echo "version=${GITHUB_REF#refs/*/}" >> "$GITHUB_ENV"
 
+            - name: Set executable flag
+              run: chmod +x op
+
             - name: Zip executable
               run: zip -r openproject-cli_linux_x64_${{ env.version }}.zip op
 
